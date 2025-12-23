@@ -1,17 +1,14 @@
 # Node
 node_modules/
-npm-debug.log*
-yarn.lock
-pnpm-lock.yaml
 
 # Env
 .env
-.env.*
 
-# Uploads (decida se vai versionar ou não)
-uploads/*
-!uploads/.gitkeep
+# Uploads
+uploads/
 
-# OS/Editor
+# Logs
+*.log
+
+# OS
 .DS_Store
-.vscode/
