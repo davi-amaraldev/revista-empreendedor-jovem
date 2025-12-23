@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Revista do Empreendedor Jovem</title>
+
+    <!-- caminho correto quando abre em /admin/dashboard.html -->
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <style>
+      .admin-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+      .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+      @media (max-width: 900px) { .admin-grid { grid-template-columns: 1fr; } }
+      .card { border: 1px solid #ddd; background: #fff; padding: 16px; }
+      .card h2 { margin: 0 0 12px; }
+      .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+      .field label { font-weight: 600; }
+      .field input, .field textarea, .field select { padding: 10px; border: 1px solid #ccc; font: inherit; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+      .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      button { padding: 10px 14px; border: 1px solid #111; background: #111; color: #fff; cursor: pointer; }
+      button.secondary { background: #fff; color: #111; }
+      .muted { color: #666; font-size: 14px; }
+      .preview { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+      .preview img { width: 110px; height: 70px; object-fit: cover; border: 1px solid #ddd; }
+      .list { display: flex; flex-direction: column; gap: 12px; }
+      .item { border: 1px solid #ddd; padding: 12px; background: #fff; }
+      .item-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+      .item h3 { margin: 0; }
+      .item .meta { font-size: 13px; color: #555; margin-top: 6px; }
+      .item img { width: 140px; height: 90px; object-fit: cover; border: 1px solid #ddd; margin-top: 10px; }
+      .danger { background: #b00020; border-color: #b00020; }
+      .status { margin-top: 10px; font-size: 14px; }
+      .status.ok { color: #0a7a2f; }
+      .status.err { color: #b00020; }
+      .topbar { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 14px; }
+      .topbar a { color: #111; }
+    </style>
+  </head>
+
+  <body>
+    <div class="admin-wrap">
+      <div class="topbar">
+        <div>
+          <h1 style="margin: 0">Painel Admin</h1>
+          <p class="muted" style="margin: 6px 0 0">
+            Painel de Administrador: 
+            <strong>/admin/dashboard.html</strong>
+          </p>
+        </div>
+
+        <div class="actions">
+          <a href="/" class="muted">← Voltar pro site</a>
+          <button id="btnRecarregar" class="secondary" type="button">Recarregar</button>
+          <button id="btnLogout" class="secondary" type="button">Sair</button>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <!-- FORM -->
+        <section class="card">
+          <h2>Criar notícia</h2>
+
+          <form id="formNoticia">
+            <div class="field">
+              <label for="titulo">Título</label>
+              <input id="titulo" name="titulo" type="text" required maxlength="255" />
+            </div>
+
+            <div class="field">
+              <label for="resumo">Resumo</label>
+              <textarea id="resumo" name="resumo" rows="3" required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="conteudo">Conteúdo</label>
+              <textarea id="conteudo" name="conteudo" rows="7" required></textarea>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="categoria">Categoria</label>
+                <select id="categoria" name="categoria" required>
+                  <option value="geral">Geral</option>
+                  <option value="tecnologia">Tecnologia</option>
+                  <option value="politica">Política</option>
+                  <option value="economia">Economia</option>
+                  <option value="empreendedorismo">Empreendedorismo</option>
+                  <option value="bolsas">Bolsas</option>
+                  <option value="cursos">Cursos</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="imagem">Imagem (opcional)</label>
+                <input id="imagem" name="imagem" type="file" accept="image/*" />
+                <div class="preview" id="preview" style="display: none">
+                  <img id="previewImg" alt="Prévia" />
+                  <span class="muted" id="previewName"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit">Publicar</button>
+              <button id="btnLimpar" class="secondary" type="button">Limpar</button>
+            </div>
+
+            <div id="statusForm" class="status"></div>
+          </form>
+        </section>
+
+        <!-- LISTA -->
+        <section class="card">
+          <h2>Notícias publicadas</h2>
+
+          <div class="field">
+            <label for="filtroCategoria">Filtrar por categoria</label>
+            <select id="filtroCategoria">
+              <option value="">Todas</option>
+              <option value="geral">Geral</option>
+              <option value="tecnologia">Tecnologia</option>
+              <option value="politica">Política</option>
+              <option value="economia">Economia</option>
+              <option value="empreendedorismo">Empreendedorismo</option>
+              <option value="bolsas">Bolsas</option>
+              <option value="cursos">Cursos</option>
+            </select>
+          </div>
+
+          <div id="lista" class="list"></div>
+          <div id="statusLista" class="status"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="/admin/admin.js" defer></script>
+  </body>
+</html>

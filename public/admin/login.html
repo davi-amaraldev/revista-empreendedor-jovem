@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Admin</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <style>
+      .wrap { max-width: 420px; margin: 60px auto; padding: 0 16px; }
+      .card { border: 1px solid #ddd; background: #fff; padding: 16px; }
+      .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+      input { padding:10px; border:1px solid #ccc; font: inherit; }
+      button { padding:10px 14px; border:1px solid #111; background:#111; color:#fff; cursor:pointer; width:100%; }
+      .muted { color:#666; font-size:14px; }
+      .err { color:#b00020; margin-top:10px; }
+      .ok { color:#0a7a2f; margin-top:10px; }
+      .top { display:flex; justify-content:space-between; align-items:baseline; gap:16px; margin-bottom:14px; }
+      a { color:#111; }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <h1 style="margin:0">Admin</h1>
+        <a href="/" class="muted">← Voltar</a>
+      </div>
+
+      <p class="muted" style="margin:0 0 14px">
+        Faça login para acessar o painel.
+      </p>
+
+      <div class="card">
+        <form id="loginForm">
+          <div class="field">
+            <label for="username">Usuário</label>
+            <input id="username" name="username" autocomplete="username" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Senha</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </div>
+
+          <button type="submit">Entrar</button>
+
+          <p id="msg" class="err"></p>
+          <p id="ok" class="ok"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="/admin/login.js" defer></script>
+  </body>
+</html>

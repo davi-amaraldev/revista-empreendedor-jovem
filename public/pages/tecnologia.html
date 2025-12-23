@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tecnologia | Revista do Empreendedor Jovem</title>
+     <!-- Favicon -->
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="/css/style.css" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3576536816836232"
+     crossorigin="anonymous"></script>
+    <style>
+      .page-wrap { max-width: 1150px; margin: 24px auto; padding: 0 16px; }
+      .page-top { display:flex; justify-content:space-between; align-items:baseline; gap:16px; margin-bottom:10px; }
+      .page-top .muted { color:#666; font-size:14px; }
+      .section-title { margin:12px 0 8px; font-size:28px; letter-spacing:-0.2px; text-transform:capitalize; }
+      .lead { margin:0 0 18px; color:#222; }
+      .grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; align-items:start; }
+      @media (max-width:900px){ .grid{ grid-template-columns:1fr; } }
+      .card { border:1px solid #ddd; background:#fff; padding:14px; }
+      .news-list { display:flex; flex-direction:column; gap:14px; }
+      .news-item { border-top:1px solid #ddd; padding-top:14px; }
+      .news-link { display:grid; grid-template-columns:180px 1fr; gap:14px; color:inherit; text-decoration:none; }
+      @media (max-width:700px){ .news-link{ grid-template-columns:1fr; } }
+      .news-img { width:180px; height:120px; object-fit:cover; border:1px solid #ddd; }
+      @media (max-width:700px){ .news-img{ width:100%; height:200px; } }
+      .meta { font-size:12px; color:#666; margin-bottom:6px; text-transform:capitalize; }
+      .title { margin:0 0 6px; font-size:18px; line-height:1.2; }
+      .summary { margin:0; color:#333; }
+      .side-list a { color:inherit; text-decoration:none; }
+      .side-list a:hover, .news-link:hover .title { text-decoration:underline; }
+      .status { margin-top:10px; color:#666; font-size:14px; }
+      .status.err { color:#b00020; }
+    </style>
+  </head>
+
+  <body data-categoria="tecnologia">
+    <header class="header">
+      <a href="/"><img src="/logo.png" alt="Revista do Empreendedor Jovem"></a>
+      <p class="date" id="today"></p>
+    </header>
+
+    <nav class="nav">
+      <a href="/">Geral</a>
+      <a href="/pages/tecnologia.html" class="active">Tecnologia</a>
+      <a href="/pages/politica.html">Política</a>
+      <a href="/pages/economia.html">Economia</a>
+      <a href="/pages/empreendedorismo.html">Empreendedorismo</a>
+      <a href="/pages/bolsas.html">Bolsas de Estudo</a>
+      <a href="/pages/cursos.html">Cursos</a>
+    </nav>
+
+    <main class="page-wrap">
+      <div class="page-top">
+        <div>
+          <h2 class="section-title">Tecnologia</h2>
+          <p class="lead">Inovação, software, startups e tendências digitais.</p>
+        </div>
+        <a class="muted" href="/admin/dashboard.html">Admin</a>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div id="mainSpot"><p class="status">Carregando...</p></div>
+          <hr style="border:none;border-top:1px solid #ddd;margin:16px 0" />
+          <div class="news-list" id="newsList"></div>
+          <p class="status" id="status"></p>
+        </section>
+
+        <aside class="card">
+          <h3 style="margin:0 0 12px">Últimas</h3>
+          <div class="side-list" id="latestList"></div>
+          <p class="status" id="statusSide"></p>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>© 2025 Revista do Empreendedor Jovem</p>
+    </footer>
+
+    <script>
+      const categoria = document.body.dataset.categoria || "";
+      const todayEl = document.getElementById("today");
+      const mainSpot = document.getElementById("mainSpot");
+      const newsList = document.getElementById("newsList");
+      const latestList = document.getElementById("latestList");
+      const statusEl = document.getElementById("status");
+      const statusSideEl = document.getElementById("statusSide");
+
+      function escapeHtml(str){ return String(str??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+      function formatDate(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"}); }
+      function linkMateria(n){ return `/pages/materia.html?id=${encodeURIComponent(n.id)}`; }
+
+      function renderMain(n){
+        const href=linkMateria(n);
+        mainSpot.innerHTML=`
+          <div class="meta">${escapeHtml(n.categoria)} • ${escapeHtml(formatDate(n.created_at))}</div>
+          <h3 class="title" style="font-size:22px">
+            <a href="${href}" style="color:inherit;text-decoration:none">${escapeHtml(n.titulo)}</a>
+          </h3>
+          <p class="summary">${escapeHtml(n.resumo)}</p>
+          ${n.imagem ? `<img class="news-img" style="margin-top:12px;width:100%;height:320px" src="${n.imagem}" alt="">` : ""}
+        `;
+      }
+
+      function renderList(items){
+        newsList.innerHTML = items.map(n=>{
+          const href=linkMateria(n);
+          return `
+            <article class="news-item">
+              <a class="news-link" href="${href}">
+                ${n.imagem
+                    ? `<img class="news-img" src="${n.imagem}" alt="">`
+                    : `<div class="news-img" style="display:flex;align-items:center;justify-content:center;background:#f4f4f4;color:#777;">Sem imagem</div>`
+                }
+                <div>
+                  <div class="meta">${escapeHtml(n.categoria)} • ${escapeHtml(formatDate(n.created_at))}</div>
+                  <h4 class="title">${escapeHtml(n.titulo)}</h4>
+                  <p class="summary">${escapeHtml(n.resumo)}</p>
+                </div>
+              </a>
+            </article>`;
+        }).join("");
+      }
+
+      function renderSide(items){
+        latestList.innerHTML = items.map(n=>{
+          const href=linkMateria(n);
+          return `<p style="margin:0 0 10px"><a href="${href}">${escapeHtml(n.titulo)}</a></p>`;
+        }).join("");
+      }
+
+      async function init(){
+        if(todayEl){
+          const now=new Date();
+          todayEl.textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+        }
+
+        const url = categoria ? `/api/noticias?categoria=${encodeURIComponent(categoria)}` : `/api/noticias`;
+
+        try{
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if(!res.ok){
+            mainSpot.innerHTML = `<p class="status err">${escapeHtml(data?.error || "Erro ao carregar.")}</p>`;
+            return;
+          }
+
+          if(!Array.isArray(data) || data.length === 0){
+            mainSpot.innerHTML = `<p class="status">Sem notícias por enquanto.</p>`;
+            newsList.innerHTML = "";
+            latestList.innerHTML = "";
+            return;
+          }
+
+          renderMain(data[0]);
+          renderList(data.slice(1, 11));
+          renderSide(data.slice(0, 6));
+          statusEl.textContent = "";
+          statusSideEl.textContent = "";
+        } catch(e){
+          mainSpot.innerHTML = `<p class="status err">Falha de rede ao carregar.</p>`;
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Revista do Empreendedor Jovem - Finanças | Global | Empreendedorismo</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <meta
+      name="description"
+      content="Revista do Empreendedor Jovem — notícias sobre tecnologia, economia, empreendedorismo, bolsas e cursos."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Davi H. do Amaral" />
+
+    <!-- Open Graph (compartilhamento) -->
+    <meta property="og:site_name" content="Revista do Empreendedor Jovem" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Revista do Empreendedor Jovem" />
+    <meta
+      property="og:description"
+      content="Notícias sobre tecnologia, economia, empreendedorismo, bolsas e cursos."
+    />
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:url" content="/" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/logo.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+
+
+    <!-- AdSense (ok manter aqui) -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3576536816836232"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- CSS mínimo pros slots (se preferir, move pro style.css depois) -->
+    <style>
+      .ad-box {
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+      }
+      .ad-label {
+        font-size: 12px;
+        color: #666;
+        margin: 0 0 6px;
+      }
+      .ad-placeholder {
+        border: 1px dashed #bbb;
+        padding: 16px;
+        text-align: center;
+        font-size: 14px;
+        color: #777;
+        background: #fafafa;
+      }
+      .ad-feed {
+        margin: 14px 0;
+      }
+    </style>
+  </head>
+
+  <body data-categoria="">
+    <header class="header">
+      <a href="/"><img src="/logo.png" alt="Revista do Empreendedor Jovem" /></a>
+      <p class="date"></p>
+    </header>
+
+    <nav class="nav">
+      <a href="/pages/geral.html">Geral</a>
+      <a href="/pages/tecnologia.html">Tecnologia</a>
+      <a href="/pages/politica.html">Política</a>
+      <a href="/pages/economia.html">Economia</a>
+      <a href="/pages/empreendedorismo.html">Empreendedorismo</a>
+      <a href="/pages/bolsas.html">Bolsas de Estudo</a>
+      <a href="/pages/cursos.html">Cursos</a>
+    </nav>
+
+    <main class="layout">
+      <aside class="sidebar left">
+        <h3>Destaques</h3>
+        <div id="destaques"></div>
+
+        <!-- Anúncio sidebar (slot futuro) -->
+        <div class="ad-box">
+          <p class="ad-label">Publicidade</p>
+          <div class="ad-placeholder">Anuncie aqui</div>
+        </div>
+      </aside>
+
+      <article class="main-article" id="mainArticle">
+        <!-- js injection aqui -->
+      </article>
+
+      <section class="secondary" id="secondary">
+        <!-- Slot de anúncio no feed (futuro in-feed) -->
+        <div class="ad-box ad-feed">
+          <p class="ad-label">Publicidade</p>
+          <div class="ad-placeholder">Anuncie aqui</div>
+        </div>
+        <!-- outro injection -->
+      </section>
+
+      <aside class="sidebar right">
+        <h3>Últimas</h3>
+        <div id="ultimas"></div>
+
+        <!-- Anúncio sidebar (slot futuro) -->
+        <div class="ad-box">
+          <p class="ad-label">Publicidade</p>
+          <div class="ad-placeholder">Anuncie aqui</div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <p>© 2025 Revista do Empreendedor Jovem</p>
+    </footer>
+
+    <script src="/js/main.js" defer></script>
+  </body>
+</html>
