@@ -13,11 +13,34 @@ dotenv.config();
 
 const app = express();
 
-// ===== CORS (se frontend e backend estão no mesmo host/porta, isso já basta) =====
-app.use(cors());
+/**
+ * IMPORTANTE:
+ * - Se você usa Cloudflare Tunnel / Proxy reverso, o Express precisa confiar no proxy
+ *   para o cookie secure/sameSite funcionar direito.
+ */
+app.set("trust proxy", 1);
+
+// ===== Body =====
 app.use(express.json());
 
+// ===== CORS =====
+// Se front e back estão no mesmo domínio, você pode manter simples.
+// Se for usar Tunnel (domínio diferente), configure ALLOWED_ORIGIN no .env
+// e habilite credentials.
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "";
+if (ALLOWED_ORIGIN) {
+  app.use(
+    cors({
+      origin: ALLOWED_ORIGIN,
+      credentials: true,
+    })
+  );
+} else {
+  app.use(cors());
+}
+
 // ===== Sessions =====
+const IS_PROD = process.env.NODE_ENV === "production";
 app.use(
   session({
     name: "revista.sid",
@@ -27,7 +50,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: "lax",
-      // secure: true, // só liga quando estiver em HTTPS
+      secure: IS_PROD, // em prod HTTPS true (tunnel/proxy geralmente é HTTPS)
     },
   })
 );
@@ -69,6 +92,7 @@ const CATEGORIAS_VALIDAS = new Set([
   "empreendedorismo",
   "bolsas",
   "cursos",
+  "carreira",
 ]);
 
 function requireAdmin(req, res, next) {
@@ -88,7 +112,6 @@ async function ensureEnvAdmin() {
     return;
   }
 
-  // garante tabela (caso não exista)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admins (
       id SERIAL PRIMARY KEY,
@@ -105,10 +128,10 @@ async function ensureEnvAdmin() {
   }
 
   const hash = await bcrypt.hash(pass, 10);
-  await pool.query(
-    "INSERT INTO admins (username, password_hash) VALUES ($1, $2)",
-    [user, hash]
-  );
+  await pool.query("INSERT INTO admins (username, password_hash) VALUES ($1, $2)", [
+    user,
+    hash,
+  ]);
 
   console.log(`[admin] Criado admin inicial '${user}' a partir do .env.`);
 }
@@ -118,9 +141,115 @@ async function ensureEnvAdmin() {
 // Health
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-// ===== AUTH ADMIN =====
+// ===== ADS (público) =====
+// Corrigido: só filtra por categoria se categoria veio na query
+app.get("/api/ads", async (req, res) => {
+  try {
+    const { slot, categoria } = req.query;
+    if (!slot) return res.status(400).json({ error: "slot é obrigatório." });
 
-// login
+    let sql = `
+      SELECT *
+      FROM ads
+      WHERE ativo = true
+        AND slot = $1
+    `;
+    const params = [slot];
+
+    // se categoria foi enviada, preferimos categoria igual, mas aceitamos global (NULL)
+    if (categoria) {
+      sql += ` AND (categoria IS NULL OR categoria = $2)`;
+      params.push(categoria);
+      sql += `
+        ORDER BY
+          CASE WHEN categoria = $2 THEN 0 ELSE 1 END,
+          peso DESC,
+          created_at DESC
+        LIMIT 1
+      `;
+    } else {
+      // sem categoria: pega o melhor anúncio global/qualquer
+      sql += `
+        ORDER BY
+          peso DESC,
+          created_at DESC
+        LIMIT 1
+      `;
+    }
+
+    const result = await pool.query(sql, params);
+
+    if (result.rowCount === 0) return res.json(null);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar anúncio." });
+  }
+});
+
+// ===== ADS ADMIN (protegido) =====
+app.post("/api/admin/ads", requireAdmin, upload.single("imagem"), async (req, res) => {
+  try {
+    const { slot, titulo, texto, href, categoria, tipo, peso, adsense_slot } = req.body;
+
+    if (!slot) return res.status(400).json({ error: "slot é obrigatório." });
+
+    if (categoria && !CATEGORIAS_VALIDAS.has(categoria)) {
+      return res.status(400).json({ error: "Categoria inválida." });
+    }
+
+    const imagem = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const result = await pool.query(
+      `INSERT INTO ads (slot, titulo, texto, href, imagem, categoria, tipo, peso, adsense_slot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING *`,
+      [
+        slot,
+        titulo || null,
+        texto || null,
+        href || null,
+        imagem,
+        categoria || null,
+        tipo || "patrocinador",
+        Number.isFinite(Number(peso)) ? Number(peso) : 100,
+        adsense_slot || null,
+      ]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao criar anúncio." });
+  }
+});
+
+app.get("/api/admin/ads", requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM ads ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao listar anúncios." });
+  }
+});
+
+app.delete("/api/admin/ads/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: "ID inválido." });
+
+    const result = await pool.query("DELETE FROM ads WHERE id = $1 RETURNING id", [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: "Anúncio não encontrado." });
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao apagar anúncio." });
+  }
+});
+
+// ===== AUTH ADMIN =====
 app.post("/api/admin/login", async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -149,20 +278,16 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
-// me
 app.get("/api/admin/me", (req, res) => {
   if (!req.session?.adminId) return res.status(401).json({ error: "Não autenticado." });
   res.json({ ok: true, adminId: req.session.adminId, username: req.session.username });
 });
 
-// logout
 app.post("/api/admin/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-// ===== NOTÍCIAS =====
-
-// listar (público)
+// ===== NOTÍCIAS (público) =====
 app.get("/api/noticias", async (req, res) => {
   try {
     const { categoria } = req.query;
@@ -172,10 +297,9 @@ app.get("/api/noticias", async (req, res) => {
     }
 
     const result = categoria
-      ? await pool.query(
-          "SELECT * FROM noticias WHERE categoria = $1 ORDER BY created_at DESC",
-          [categoria]
-        )
+      ? await pool.query("SELECT * FROM noticias WHERE categoria = $1 ORDER BY created_at DESC", [
+          categoria,
+        ])
       : await pool.query("SELECT * FROM noticias ORDER BY created_at DESC");
 
     res.json(result.rows);
@@ -185,7 +309,6 @@ app.get("/api/noticias", async (req, res) => {
   }
 });
 
-// buscar 1 (público)
 app.get("/api/noticias/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -246,7 +369,7 @@ app.delete("/api/noticias/:id", requireAdmin, async (req, res) => {
 });
 
 // ===== Start =====
-const PORT = 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 ensureEnvAdmin()
   .then(() => {
