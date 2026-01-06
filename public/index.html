@@ -31,13 +31,12 @@
     <meta name="twitter:image" content="/logo.png" />
 
     <!-- Favicon -->
-    <link rel="icon" href="/favicon/favicon.ico" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/favicon/site.webmanifest">
-    <meta name="theme-color" content="#ffffff">
-
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicon/site.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
 
     <!-- AdSense (ok manter aqui) -->
     <script
@@ -46,19 +45,22 @@
       crossorigin="anonymous"
     ></script>
 
-    <!-- CSS mínimo pros slots (se preferir, move pro style.css depois) -->
+    <!-- CSS mínimo pros slots (pode mover pro style.css depois) -->
     <style>
-      .ad-box {
-        margin-top: 14px;
-        padding-top: 10px;
-        border-top: 1px solid #ddd;
+      .ad-slot {
+        margin: 14px 0;
+        padding: 12px;
+        border: 1px solid #ddd;
+        background: #fff;
       }
       .ad-label {
         font-size: 12px;
         color: #666;
-        margin: 0 0 6px;
+        margin: 0 0 8px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
       }
-      .ad-placeholder {
+      .ad-fallback {
         border: 1px dashed #bbb;
         padding: 16px;
         text-align: center;
@@ -66,12 +68,10 @@
         color: #777;
         background: #fafafa;
       }
-      .ad-feed {
-        margin: 14px 0;
-      }
     </style>
   </head>
 
+  <!-- data-categoria vazio na home -->
   <body data-categoria="">
     <header class="header">
       <a href="/"><img src="/logo.png" alt="Revista do Empreendedor Jovem" /></a>
@@ -81,6 +81,7 @@
     <nav class="nav">
       <a href="/pages/bolsas.html">Estudos no Exterior</a>
       <a href="/pages/empreendedorismo.html">Empreendedorismo</a>
+      <a href="/pages/carreira.html">Carreira</a>
       <a href="/pages/geral.html">Geral</a>
       <a href="/pages/tecnologia.html">Tecnologia</a>
       <a href="/pages/politica.html">Política</a>
@@ -93,34 +94,35 @@
         <h3>Destaques</h3>
         <div id="destaques"></div>
 
-        <!-- Anúncio sidebar (slot futuro) -->
-        <div class="ad-box">
+        <!-- SLOT: sidebar esquerda -->
+        <div class="ad-slot" id="ad_home_sidebar_left">
           <p class="ad-label">Publicidade</p>
-          <div class="ad-placeholder">Anuncie aqui</div>
+          <div class="ad-fallback">Anuncie aqui</div>
         </div>
       </aside>
 
       <article class="main-article" id="mainArticle">
-        <!-- js injection aqui -->
+        <!-- main.js injeta a principal aqui -->
       </article>
 
       <section class="secondary" id="secondary">
-        <!-- Slot de anúncio no feed (futuro in-feed) -->
-        <div class="ad-box ad-feed">
+        <!-- SLOT: anúncio no feed -->
+        <div class="ad-slot" id="ad_home_feed">
           <p class="ad-label">Publicidade</p>
-          <div class="ad-placeholder">Anuncie aqui</div>
+          <div class="ad-fallback">Anuncie aqui</div>
         </div>
-        <!-- outro injection -->
+
+        <!-- main.js injeta secundárias aqui -->
       </section>
 
       <aside class="sidebar right">
         <h3>Últimas</h3>
         <div id="ultimas"></div>
 
-        <!-- Anúncio sidebar (slot futuro) -->
-        <div class="ad-box">
+        <!-- SLOT: sidebar direita -->
+        <div class="ad-slot" id="ad_home_sidebar_right">
           <p class="ad-label">Publicidade</p>
-          <div class="ad-placeholder">Anuncie aqui</div>
+          <div class="ad-fallback">Anuncie aqui</div>
         </div>
       </aside>
     </main>
@@ -129,6 +131,27 @@
       <p>© 2025 Revista do Empreendedor Jovem</p>
     </footer>
 
+    <!-- Base URL (se você usa window.API_BASE) -->
+    <script src="/js/config.js"></script>
+
+    <!-- Sistema de anúncios (público) -->
+    <script src="/js/ads.js"></script>
+
+    <!-- Seu JS principal -->
     <script src="/js/main.js" defer></script>
+
+    <!-- Inicializa os slots do index -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const categoria = document.body?.dataset?.categoria || "";
+
+        // Segurança: se ads.js não carregou por algum motivo, não quebra a página
+        if (typeof loadAd !== "function") return;
+
+        loadAd("ad_home_sidebar_left", { slot: "home_sidebar_left", categoria });
+        loadAd("ad_home_feed", { slot: "home_feed", categoria });
+        loadAd("ad_home_sidebar_right", { slot: "home_sidebar_right", categoria });
+      });
+    </script>
   </body>
 </html>

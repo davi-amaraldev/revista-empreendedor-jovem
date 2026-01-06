@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Anúncios</title>
+
+  <!-- Mantém seu CSS global se quiser -->
+  <link rel="stylesheet" href="/css/style.css" />
+  <!-- CSS novo do admin -->
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Painel de Anúncios</h1>
+        <p class="muted">Crie, publique e remova anúncios por slot e categoria.</p>
+      </div>
+
+      <div class="badge">
+        <span>🔒</span>
+        <span>Admin</span>
+        <span>•</span>
+        <a href="/admin/dashboard.html">Voltar</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Coluna esquerda: Criar anúncio -->
+      <section class="card">
+        <h2>Criar anúncio</h2>
+        <p class="muted">Envie o banner e defina o destino (link). Você pode usar “Placeholder” para preencher espaços.</p>
+
+        <form id="formAd" class="form" enctype="multipart/form-data">
+          <div class="row">
+            <div class="field">
+              <label>Slot</label>
+              <select name="slot" required>
+                <option value="materia_topo">Matéria • Topo</option>
+                <option value="materia_rodape">Matéria • Rodapé</option>
+                <option value="home_sidebar">Home • Sidebar</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Tipo</label>
+              <select name="tipo">
+                <option value="patrocinador">Patrocinador</option>
+                <option value="placeholder">Placeholder</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Categoria</label>
+              <select name="categoria">
+                <option value="">Geral</option>
+                <option value="geral">Geral</option>
+                <option value="tecnologia">Tecnologia</option>
+                <option value="economia">Economia</option>
+                <option value="empreendedorismo">Empreendedorismo</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Título (opcional)</label>
+              <input class="input" type="text" name="titulo" placeholder="Ex: Loja X • 20% OFF" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Texto (opcional)</label>
+              <input class="input" type="text" name="texto" placeholder="Ex: Clique e fale no WhatsApp" />
+            </div>
+
+            <div class="field">
+              <label>Link (URL)</label>
+              <input class="input" type="url" name="href" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Banner (imagem)</label>
+            <input class="input" id="bannerInput" type="file" name="imagem" accept="image/*" />
+          </div>
+
+          <div class="preview" id="previewBox">
+            <p class="muted" style="margin:0;">Prévia do banner</p>
+            <img id="previewImg" src="" alt="" style="display:none;">
+            <p class="muted" id="previewHint" style="margin:0;">Selecione uma imagem para visualizar aqui.</p>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Publicar anúncio</button>
+            <button class="btn" type="reset" id="resetBtn">Limpar</button>
+            <span id="statusForm" class="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Coluna direita: Lista -->
+      <section class="card">
+        <h2>Anúncios cadastrados</h2>
+        <p class="muted">Lista por ordem de criação. Você pode apagar anúncios que expiraram.</p>
+
+        <hr class="sep" />
+
+        <div id="adsList" class="table"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/admin/ads.js"></script>
+  <script>
+    // preview do banner (UX)
+    const input = document.getElementById("bannerInput");
+    const img = document.getElementById("previewImg");
+    const hint = document.getElementById("previewHint");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function clearPreview(){
+      img.style.display = "none";
+      img.src = "";
+      hint.style.display = "block";
+    }
+
+    input?.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (!file) return clearPreview();
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      img.style.display = "block";
+      hint.style.display = "none";
+    });
+
+    resetBtn?.addEventListener("click", () => clearPreview());
+  </script>
+</body>
+</html>
